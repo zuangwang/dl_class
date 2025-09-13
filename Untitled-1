@@ -1,0 +1,194 @@
+% filepath: /home/zuangwang/dl/dl_class/report_1_detailed.tex
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{Deep Learning Experiments Report}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+\section{Part 1: Model Structure Comparison}
+
+\subsection{Target Function}
+The ground-truth function that the models are trained to approximate is defined as:
+\[
+f(x) = \frac{\sin(5 \pi x)}{5 \pi x + 10^{-6}}
+\]
+This function outputs a smooth oscillatory pattern, with a singularity avoided by adding a small constant ($10^{-6}$) to the denominator. The input $x$ is sampled from a uniform distribution between 0 and 1. This type of function is challenging for neural networks to approximate due to its oscillatory nature and the sharp changes in its gradient.
+
+\subsection{Model Architectures and Training}
+To analyze the effect of network architecture, two different Deep Neural Network (DNN) models were designed with a nearly identical number of trainable parameters. Both models were trained on the same dataset to approximate the target function:
+\begin{itemize}
+    \item \textbf{Model 1 (Wide):} A wider but shallower network with 1 hidden layer of 128 neurons. Total parameters: 385.
+    \item \textbf{Model 2 (Deep):} A deeper but narrower network with 2 hidden layers, each with 18 neurons. Total parameters: 379.
+\end{itemize}
+
+Both models were trained for 100 epochs using the Adam optimizer with a learning rate of 0.001 and Mean Squared Error (MSE) as the loss function.
+
+\subsection{Training Process Comparison}
+The training and test loss for both models were recorded at each epoch. The chart below compares the test loss curves, illustrating how each model converged over time.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/combined_training_loss.png}
+    \caption{Test Loss Comparison}
+\end{figure}
+
+\subsection{Prediction Visualization}
+To evaluate the final performance, the predictions from both trained models are plotted against the ground-truth function. This visualization helps assess how well each model learned to approximate the underlying function across its domain.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/predictions_vs_truth.png}
+    \caption{Predictions vs. Ground Truth}
+\end{figure}
+
+\textbf{Conclusion:} The results show that both models are capable of approximating the target function, but their performance differs. The wide model converges faster and achieves slightly better accuracy, while the deep model struggles with the oscillatory nature of the function due to its limited capacity in each layer.
+
+\newpage
+
+\section{Part 2: Optimization and Loss Landscape Analysis}
+
+\subsection{Visualization of the Optimization Process}
+\textbf{Experiment Settings:}
+\begin{itemize}
+    \item \textbf{Model:} A DNN with 2 hidden layers of 32 neurons each.
+    \item \textbf{Task:} Approximating the function $f(x) = \frac{\sin(5 \pi x)}{5 \pi x + 10^{-6}}$.
+    \item \textbf{Optimizer:} Adam with a learning rate of 0.001.
+    \item \textbf{Training:} The model was trained 8 separate times for 150 epochs each, starting from different random initializations.
+    \item \textbf{Data Collection:} At the end of each epoch, the flattened weight vectors for the entire model and for the first hidden layer were recorded.
+    \item \textbf{Dimension Reduction:} Principal Component Analysis (PCA) was used to project the high-dimensional parameter trajectories into a 2D space for visualization.
+\end{itemize}
+
+\textbf{Results:}
+The figures below show the 2D projection of the parameter trajectories for the 8 training runs. The 'x' marks the starting point and the '*' marks the end point of training.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/pca_whole_model.png}
+    \caption{PCA of Whole Model Parameters}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/pca_first_layer.png}
+    \caption{PCA of First Layer Parameters}
+\end{figure}
+
+\textbf{Conclusion:} The trajectories show that while the models start from different random points in the parameter space, they all navigate towards a similar region. This suggests the existence of a broad, attractive basin of low loss in the landscape. The paths are curved and complex, highlighting the non-linear nature of the optimization process.
+
+\subsection{Gradient Norm Observation}
+\textbf{Gradient Norm vs. Loss:}
+The figure below plots the training loss and the L2 norm of the gradients against the number of training iterations. Both axes are on a logarithmic scale to better visualize the changes over time.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/loss_vs_grad_norm.png}
+    \caption{Loss and Gradient Norm vs. Iterations}
+\end{figure}
+
+\textbf{Conclusion:} The plot clearly shows that the gradient norm decreases in tandem with the loss. As the model learns and the loss value drops, the gradient norm also becomes smaller. This is expected behavior: as the optimizer approaches a minimum in the loss landscape, the slope (gradient) of the landscape naturally flattens out, approaching zero.
+
+\newpage
+
+\section{Part 3: Fitting Random Labels}
+
+\textbf{Experiment Settings:}
+Two identical CNN models were trained:
+\begin{itemize}
+    \item \textbf{Scenario 1 (Normal):} The model was trained on the standard MNIST training set with correct labels.
+    \item \textbf{Scenario 2 (Random):} The model was trained on the same MNIST images, but the corresponding labels were randomly permuted.
+\end{itemize}
+
+\textbf{Results:}
+The plots below compare the training loss and training accuracy for both models.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/training_loss_comparison.png}
+    \caption{Training Loss Comparison}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/training_accuracy_comparison.png}
+    \caption{Training Accuracy Comparison}
+\end{figure}
+
+\textbf{Conclusion:} The results demonstrate that a neural network with sufficient capacity can perfectly fit random labels. This highlights the importance of evaluating models on unseen test data to assess true generalization performance.
+
+\newpage
+
+\section{Part 4: Model Capacity vs. Performance on CIFAR-10}
+
+\textbf{Experiment Settings:}
+A series of 10 `CifarCNN` models were created with different architectures. The capacity was adjusted by varying the number of channels in the convolutional layers and the size/depth of the fully connected layers, resulting in models with parameter counts ranging from approximately 100,000 to 500,000.
+
+\textbf{Results:}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/accuracy_vs_capacity.png}
+    \caption{Final Test Accuracy vs. Model Capacity}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/loss_vs_capacity.png}
+    \caption{Final Test Loss vs. Model Capacity}
+\end{figure}
+
+\textbf{Conclusion:} The results illustrate the classic bias-variance tradeoff in machine learning. Increasing model capacity helps reduce bias (underfitting) but increases variance (overfitting). Finding the right model capacity is crucial for achieving good generalization.
+
+\newpage
+
+\section{Part 5: Loss Landscape Interpolation}
+
+\textbf{Experiment Settings:}
+Two identical `CifarCNN` models were trained:
+\begin{itemize}
+    \item \textbf{Model 1:} Trained with a batch size of 64.
+    \item \textbf{Model 2:} Trained with a batch size of 1024.
+\end{itemize}
+
+A series of new models were created by linearly interpolating the weights of the two trained models using the formula:
+\[
+\theta(\alpha) = (1 - \alpha) \cdot \theta_1 + \alpha \cdot \theta_2
+\]
+The interpolation ratio $\alpha$ was varied from 0 to 1.
+
+\textbf{Results:}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/interpolation_path.png}
+    \caption{Linear Interpolation Path Between Models}
+\end{figure}
+
+\textbf{Conclusion:} The results show that there is a significant loss barrier on the direct linear path between the two minima found by the different training runs. This demonstrates the highly non-convex nature of the loss landscape.
+
+\newpage
+
+\section{Part 6: Batch Size, Generalization, and Sensitivity}
+
+\textbf{Experiment Settings:}
+Five identical `CifarCNN` models were trained with batch sizes of 32, 64, 128, 256, and 512. Sensitivity was measured as the Frobenius norm of the Jacobian matrix of the model's output probabilities with respect to its input.
+
+\textbf{Results:}
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{report_images/accuracy_and_sensitivity_vs_batch_size.png}
+    \caption{Test Accuracy and Sensitivity vs. Batch Size}
+\end{figure}
+
+\textbf{Conclusion:} Smaller batch sizes lead to better generalization and lower sensitivity, while larger batch sizes result in sharper minima and poorer generalization.
+
+\end{document}
